@@ -136,6 +136,8 @@ with open(os.path.join(opt.outputdir, opt.xp, 'config.json'), 'w') as f:
 #######################################################################################################################
 lr = opt.lr
 pb = range(opt.nepoch)#,file=sys.stdout)
+print(f"Starting Training for {pb} epochs")
+
 for e in pb:
     # ------------------------ Train ------------------------
     model.train()
@@ -203,8 +205,8 @@ for e in pb:
         score_ts = rmse(x_pred, test_data, reduce=False)
         score = rmse(x_pred, test_data)
     
-    print(x_pred)
-    print(test_data)
+    #print(x_pred)
+    #print(test_data)
 
     logger.log('test_epoch.rmse', score)
     logger.log('test_epoch.ts', {t: {'rmse': scr.item()} for t, scr in enumerate(score_ts)})
