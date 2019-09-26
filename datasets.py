@@ -6,12 +6,13 @@ import torch
 from utils import DotDict, normalize
 
 
-def dataset_factory(data_dir, name, k=1):
+def dataset_factory(data_dir, name, k=5):
     # get dataset
     if name[:4] == 'heat':
         opt, data, relations = heat(data_dir, '{}.csv'.format(name))
+
     else:
-        raise ValueError('Non dataset named `{}`.'.format(name))
+        raise ValueError('No dataset named `{}`.'.format(name))
     # make k hop
     new_rels = [relations]
     for n in range(k - 1):
@@ -20,6 +21,8 @@ def dataset_factory(data_dir, name, k=1):
     # split train / test
     train_data = data[:opt.nt_train]
     test_data = data[opt.nt_train:]
+    print(train_data.size())
+    print(relations.size())
     return opt, (train_data, test_data), relations
 
 
@@ -37,3 +40,18 @@ def heat(data_dir, file='heat.csv'):
     relations = torch.Tensor(np.genfromtxt(os.path.join(data_dir, 'heat_relations.csv')))
     relations = normalize(relations).unsqueeze(1)
     return opt, data, relations
+
+
+def from_numpy_data(data_dir):
+    data = torch.Tensor(np.load(data_dir)).unsqueeze(-1) #(Time,Series,1)
+    opt = DotDict()
+    opt.nt = data.size(0)
+    opt.nt_train = opt.nt//4
+    opt.nx = data.size(1)
+    opt.nd = 1
+    opt.periode = 1
+    relations = torch.zeros(data.size(1),1,data.size(1))
+    train_data = data[:opt.nt_train]
+    test_data = data[opt.nt_train:]
+
+    return opt, (train_data, test_data), relations

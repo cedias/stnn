@@ -3,7 +3,7 @@ import random
 import json
 from collections import defaultdict, OrderedDict
 
-import configargparse
+import argparse
 from tqdm import trange
 
 import torch
@@ -13,7 +13,7 @@ import torch.optim as optim
 import torch.backends.cudnn as cudnn
 
 
-from datasets import dataset_factory
+from datasets import dataset_factory, from_numpy_data
 from utils import DotDict, Logger, rmse
 from stnn import SaptioTemporalNN
 
@@ -21,40 +21,41 @@ from stnn import SaptioTemporalNN
 #######################################################################################################################
 # Options - CUDA - Random seed
 #######################################################################################################################
-p = configargparse.ArgParser()
+p = argparse.ArgumentParser()
+
 # -- data
-p.add('--datadir', type=str, help='path to dataset', default='data')
-p.add('--dataset', type=str, help='dataset name', default='heat')
+p.add_argument('--datadir', type=str, help='path to dataset', default='data/dummy_data.np')
+#p.add_argument('--dataset', type=str, help='dataset name', default='heat')
 # -- xp
-p.add('--outputdir', type=str, help='path to save xp', default='output')
-p.add('--xp', type=str, help='xp name', default='stnn')
+p.add_argument('--outputdir', type=str, help='path to save xp', default='output')
+p.add_argument('--xp', type=str, help='xp name', default='stnn')
 # -- model
-p.add('--mode', type=str, help='STNN mode (default|refine|discover)', default='default')
-p.add('--nz', type=int, help='laten factors size', default=1)
-p.add('--activation', type=str, help='dynamic module activation function (identity|tanh)', default='identity')
-p.add('--khop', type=int, help='spatial depedencies order', default=1)
-p.add('--nhid', type=int, help='dynamic function hidden size', default=0)
-p.add('--nlayers', type=int, help='dynamic function num layers', default=1)
-p.add('--dropout_f', type=float, help='latent factors dropout', default=.0)
-p.add('--dropout_d', type=float, help='dynamic function dropout', default=.0)
-p.add('--lambd', type=float, help='lambda between reconstruction and dynamic losses', default=.1)
+p.add_argument('--mode', type=str, help='STNN mode (default|refine|discover)', default='default')
+p.add_argument('--nz', type=int, help='laten factors size', default=1)
+p.add_argument('--activation', type=str, help='dynamic module activation function (identity|tanh)', default='identity')
+p.add_argument('--khop', type=int, help='spatial depedencies order', default=1)
+p.add_argument('--nhid', type=int, help='dynamic function hidden size', default=0)
+p.add_argument('--nlayers', type=int, help='dynamic function num layers', default=1)
+p.add_argument('--dropout_f', type=float, help='latent factors dropout', default=.0)
+p.add_argument('--dropout_d', type=float, help='dynamic function dropout', default=.0)
+p.add_argument('--lambd', type=float, help='lambda between reconstruction and dynamic losses', default=.1)
 # -- optim
-p.add('--lr', type=float, help='learning rate', default=3e-3)
-p.add('--beta1', type=float, default=.0, help='adam beta1')
-p.add('--beta2', type=float, default=.999, help='adam beta2')
-p.add('--eps', type=float, default=1e-9, help='adam eps')
-p.add('--wd', type=float, help='weight decay', default=1e-6)
-p.add('--wd_z', type=float, help='weight decay on latent factors', default=1e-7)
-p.add('--l2_z', type=float, help='l2 between consecutives latent factors', default=0.)
-p.add('--l1_rel', type=float, help='l1 regularization on relation discovery mode', default=0.)
+p.add_argument('--lr', type=float, help='learning rate', default=3e-3)
+p.add_argument('--beta1', type=float, default=.0, help='adam beta1')
+p.add_argument('--beta2', type=float, default=.999, help='adam beta2')
+p.add_argument('--eps', type=float, default=1e-9, help='adam eps')
+p.add_argument('--wd', type=float, help='weight decay', default=1e-6)
+p.add_argument('--wd_z', type=float, help='weight decay on latent factors', default=1e-7)
+p.add_argument('--l2_z', type=float, help='l2 between consecutives latent factors', default=0.)
+p.add_argument('--l1_rel', type=float, help='l1 regularization on relation discovery mode', default=0.)
 # -- learning
-p.add('--batch_size', type=int, default=1000, help='batch size')
-p.add('--patience', type=int, default=150, help='number of epoch to wait before trigerring lr decay')
-p.add('--nepoch', type=int, default=10000, help='number of epochs to train for')
+p.add_argument('--batch_size', type=int, default=1024, help='batch size')
+p.add_argument('--patience', type=int, default=150, help='number of epoch to wait before trigerring lr decay')
+p.add_argument('--nepoch', type=int, default=10000, help='number of epochs to train for')
 # -- gpu
-p.add('--device', type=int, default=-1, help='-1: cpu; > -1: cuda device id')
+p.add_argument('--device', type=int, default=-1, help='-1: cpu; > -1: cuda device id')
 # -- seed
-p.add('--manualSeed', type=int, help='manual seed')
+p.add_argument('--manualSeed', type=int, help='manual seed')
 
 # parse
 opt = DotDict(vars(p.parse_args()))
@@ -79,7 +80,9 @@ if opt.device > -1:
 # Data
 #######################################################################################################################
 # -- load data
-setup, (train_data, test_data), relations = dataset_factory(opt.datadir, opt.dataset, opt.khop)
+setup, (train_data, test_data), relations = from_numpy_data(opt.datadir) #dataset_factory(opt.datadir, opt.dataset, opt.khop)
+#print(train_data.size())
+
 train_data = train_data.to(device)
 test_data = test_data.to(device)
 relations = relations.to(device)
@@ -88,7 +91,9 @@ for k, v in setup.items():
 
 # -- train inputs
 t_idx = torch.arange(opt.nt_train, out=torch.LongTensor()).unsqueeze(1).expand(opt.nt_train, opt.nx).contiguous()
+#print(t_idx.size())
 x_idx = torch.arange(opt.nx, out=torch.LongTensor()).expand_as(t_idx).contiguous()
+#print(x_idx.size())
 # dynamic
 idx_dyn = torch.stack((t_idx[1:], x_idx[1:])).view(2, -1).to(device)
 nex_dyn = idx_dyn.size(1)
