@@ -82,7 +82,7 @@ if opt.device > -1:
 # -- load data
 print(os.environ['SM_CHANNEL_TRAINING'])
 print(opt.datadir)
-setup, (train_data, test_data), relations = from_numpy_data(opt.datadir) #dataset_factory(opt.datadir, opt.dataset, opt.khop)
+setup, (train_data, test_data), relations = from_numpy_data(os.path.join(opt.datadir, opt.dataset)) #dataset_factory(opt.datadir, opt.dataset, opt.khop)
 #print(train_data.size())
 
 train_data = train_data.to(device)
