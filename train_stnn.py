@@ -1,5 +1,6 @@
 import os
 import random
+import sys
 import json
 from collections import defaultdict, OrderedDict
 
@@ -11,10 +12,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
-
-import os
-cwd = os.getcwd()
-print(os.listdir(cwd))
 
 from datasets import dataset_factory, from_numpy_data
 from utils import DotDict, Logger, rmse
@@ -136,7 +133,7 @@ with open(os.path.join(opt.outputdir, opt.xp, 'config.json'), 'w') as f:
 # Training
 #######################################################################################################################
 lr = opt.lr
-pb = trange(opt.nepoch)
+pb = trange(opt.nepoch,file=sys.stdout)
 for e in pb:
     # ------------------------ Train ------------------------
     model.train()
