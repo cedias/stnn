@@ -12,6 +12,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
 
+import os
+cwd = os.getcwd()
 
 from datasets import dataset_factory, from_numpy_data
 from utils import DotDict, Logger, rmse
