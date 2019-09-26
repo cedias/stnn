@@ -49,7 +49,7 @@ p.add_argument('--wd_z', type=float, help='weight decay on latent factors', defa
 p.add_argument('--l2_z', type=float, help='l2 between consecutives latent factors', default=0.)
 p.add_argument('--l1_rel', type=float, help='l1 regularization on relation discovery mode', default=0.)
 # -- learning
-p.add_argument('--batch_size', type=int, default=1024, help='batch size')
+p.add_argument('--batch_size', type=int, default=128, help='batch size')
 p.add_argument('--patience', type=int, default=150, help='number of epoch to wait before trigerring lr decay')
 p.add_argument('--nepoch', type=int, default=10000, help='number of epochs to train for')
 # -- gpu
@@ -202,6 +202,10 @@ for e in pb:
         x_pred, _ = model.generate(opt.nt - opt.nt_train)
         score_ts = rmse(x_pred, test_data, reduce=False)
         score = rmse(x_pred, test_data)
+    
+    print(x_pred)
+    print(test_data)
+
     logger.log('test_epoch.rmse', score)
     logger.log('test_epoch.ts', {t: {'rmse': scr.item()} for t, scr in enumerate(score_ts)})
     # checkpoint
