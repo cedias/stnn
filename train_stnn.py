@@ -15,7 +15,7 @@ import torch.backends.cudnn as cudnn
 
 from datasets import dataset_factory, from_numpy_data
 from utils import DotDict, Logger, rmse
-from stnn import SaptioTemporalNN
+from stnn import SpatioTemporalNN
 
 
 #######################################################################################################################
