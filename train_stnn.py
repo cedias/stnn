@@ -133,7 +133,7 @@ with open(os.path.join(opt.outputdir, opt.xp, 'config.json'), 'w') as f:
 # Training
 #######################################################################################################################
 lr = opt.lr
-pb = trange(opt.nepoch,file=sys.stdout)
+pb = range(opt.nepoch)#,file=sys.stdout)
 for e in pb:
     # ------------------------ Train ------------------------
     model.train()
@@ -204,11 +204,9 @@ for e in pb:
     logger.log('test_epoch.ts', {t: {'rmse': scr.item()} for t, scr in enumerate(score_ts)})
     # checkpoint
     logger.log('train_epoch.lr', lr)
-    pb.set_postfix(loss=logs_train['loss'], rmse_test=score)
+    #pb.set_postfix(loss=logs_train['loss'], rmse_test=score)
     logger.checkpoint(model)
-    
-    pb.refresh()
-    #print(f"|loss: {logs_train['loss']} | rmse_test: {score} ")
+    print(f"|loss: {logs_train['loss']} | rmse_test: {score} ")
     # schedule lr
     if opt.patience > 0 and score < 1:
         lr_scheduler.step(score)
