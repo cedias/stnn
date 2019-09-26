@@ -80,6 +80,8 @@ if opt.device > -1:
 # Data
 #######################################################################################################################
 # -- load data
+
+print(opt.datadir)
 setup, (train_data, test_data), relations = from_numpy_data(opt.datadir) #dataset_factory(opt.datadir, opt.dataset, opt.khop)
 #print(train_data.size())
 
