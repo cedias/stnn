@@ -14,7 +14,7 @@ import torch.backends.cudnn as cudnn
 
 import os
 cwd = os.getcwd()
-print(cwd)
+print(os.listdir(cwd))
 
 from datasets import dataset_factory, from_numpy_data
 from utils import DotDict, Logger, rmse
