@@ -206,6 +206,7 @@ for e in pb:
     logger.log('train_epoch.lr', lr)
     pb.set_postfix(loss=logs_train['loss'], rmse_test=score)
     logger.checkpoint(model)
+    print(f"|loss: {logs_train['loss']} | rmse_test: {score} ")
     # schedule lr
     if opt.patience > 0 and score < 1:
         lr_scheduler.step(score)
