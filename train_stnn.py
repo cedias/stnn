@@ -24,10 +24,10 @@ from stnn import SpatioTemporalNN
 p = argparse.ArgumentParser()
 
 # -- data
-p.add_argument('--datadir', type=str, help='path to dataset', default='data/dummy_data.np')
+p.add_argument('--datadir', type=str, help='path to dataset', default=os.environ['SM_CHANNEL_TRAINING'])
 #p.add_argument('--dataset', type=str, help='dataset name', default='heat')
 # -- xp
-p.add_argument('--outputdir', type=str, help='path to save xp', default='output')
+p.add_argument('--outputdir', type=str, help='path to save xp', default=os.environ['SM_MODEL_DIR'])
 p.add_argument('--xp', type=str, help='xp name', default='stnn')
 # -- model
 p.add_argument('--mode', type=str, help='STNN mode (default|refine|discover)', default='default')
